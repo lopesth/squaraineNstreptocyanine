@@ -12,7 +12,6 @@ __date__ = "Jan 04 of 2018"
 #########################################################################################
 # Impoted Modules
 import os, numpy, math
-
 #########################################################################################
 
 # Function Description: Find the number of the line in which a certain pardron appears
