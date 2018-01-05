@@ -118,15 +118,25 @@ def media_of_bond_goups(list_bo):
 
 # Description: Main function of the script
 if (__name__ == "__main__"):
-    doubleBondIndex = []
-    singleBondIndex = []
+	boList = ["mulliken", "mayer", "wiberg"]
     directory = "/Users/thiagolopes/Google Drive/squaraine/opt/"
-	molecules = [
-		"squaraine-H-H", "squaraine-OMe-NMe2", "squaraine-H-NMe2", "squaraine-OMe-OMe", "squaraine-NMe2-NMe2",
-		"stilbene_H-H",	"squaraine-OH-OH", "stilbene_O-OH", "squaraine-OMe-H", "stilbene_OH-OH"
-	]
+	molecules = {
+		"squaraine-H-H":[[], []], "squaraine-OMe-NMe2":[[], []],
+		"squaraine-H-NMe2":[[], []], "squaraine-OMe-OMe":[[], []],
+		"squaraine-NMe2-NMe2":[[], []], "stilbene_H-H":[[], []],
+		"squaraine-OH-OH":[[], []], "stilbene_O-OH":[[], []],
+		"squaraine-OMe-H":[[], []], "stilbene_OH-OH":[[], []]
+	}
     fileTarget = open(directory+"bla_N_boa_data.txt", "w")
-    for molecule in molecules:
-        fileSourceName = "opt_"+molecule+".log"
+    for molecule in list(molecules.keys()):
+		doubleBondIndex = molecules[molecule][0]
+    	singleBondIndex = molecules[molecule][1]
+        fileSourceNameBLA = directory+"opt_"+molecule+".log"
         BLA_single_length = bond_distance(BLA_double_index)
 		BLA_double_length = bond_distance(BLA_single_index)
+		for bo in boList:
+			fileSourceNameBOA = directory+"/multwfn/opt_"+molecule+"_bndmat_"+bo+".txt"
+			bond_orders = take_bond_order(atons_number, name_file)
+			singles = filter_BO_interest(bond_orders, (molecules[molecule])[1])
+			doubles = filter_BO_interest(bond_orders, (molecules[molecule])[2])
+			boa_alternation = media_of_bond_goups(singles) - media_of_bond_goups(doubles)
