@@ -5,7 +5,7 @@ __GitHubPage__ = "https://github.com/lopesth"
 __email__ = "lopes.th.o@gmail.com"
 __date__ = "Jan 06 of 2018"
 
-# Description: Prepare the squaraines optimization inputs for submission
+''' Description: Prepare the squaraines optimization inputs for submission'''
 
 ########################################################################################
 
