@@ -1,9 +1,18 @@
+#########################################################################################
+# Python file header
 __author__ = "Thiago Lopes"
+__GitHubPage__ = "https://github.com/lopesth"
 __email__ = "lopes.th.o@gmail.com"
-__date__ = "Nov 17 of 2017"
+__date__ = "Friday, 12 January 2018"
 
+''' Description: Find the position of atoms in an output of G09'''
+#########################################################################################
+
+#########################################################################################
+# Impoted Modules
 from find_a_string_in_file import Find_a_String
 from periodic_table import Convert_Period_Table
+#########################################################################################
 
 class Find_XYZ(object):
 

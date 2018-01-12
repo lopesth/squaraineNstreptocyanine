@@ -1,6 +1,13 @@
+#########################################################################################
+# Python file header
 __author__ = "Thiago Lopes"
+__GitHubPage__ = "https://github.com/lopesth"
 __email__ = "lopes.th.o@gmail.com"
-__date__ = "Nov 17 of 2017"
+__date__ = "Friday, 12 January 2018"
+
+''' Description: Find a specific string in a file'''
+#########################################################################################
+
 
 class Find_a_String(object):
 
