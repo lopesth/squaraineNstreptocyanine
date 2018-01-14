@@ -17,6 +17,7 @@ class Find_a_String(object):
 
     def return_numbers_of_line(self):
         numbers = []
+        myFileString = []
         with open(self.file) as myFile:
             for num, line in enumerate(myFile):
                 if (self.lookup in line):
