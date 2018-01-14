@@ -13,7 +13,7 @@ __date__ = "Friday, 12 January 2018"
 from twoPoints import TwoPoints
 #########################################################################################
 
-class bondLength(object):
+class BondLength(object):
     def __init__(self, molecule):
         self.molecule = molecule
 
@@ -32,6 +32,3 @@ class bondLength(object):
         z2 = atom2.returnZPos()
         bondLength = TwoPoints([x1, y1, z1], [x2, y2, z2]).distanceBetween()
         return bondLength
-
-
-    

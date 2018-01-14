@@ -13,7 +13,7 @@ class Atom(object):
         self.atomType =atomType 
         self.xPos = xPos
         self.yPos = yPos
-        self.ZPos = ZPos
+        self.zPos = ZPos
 
     def returnAtomType(self):
         return self.atomType
@@ -28,15 +28,15 @@ class Atom(object):
         return self.zPos
 
     def returnPos(self):
-        return [self.xPos, self.yPos, self.ZPos]
+        return [self.xPos, self.yPos, self.zPos]
     
     def returnAtom(self):
-        return [self.atomType, self.xPos, self.yPos, self.ZPos]
+        return [self.atomType, self.xPos, self.yPos, self.zPos]
 
     def moveAtom(self, newX, newY, newZ):
         self.xPos = newX
         self.yPos = newY
-        self.ZPos = newZ
+        self.zPos = newZ
 
 class Molecule(object):
     def __init__(self):

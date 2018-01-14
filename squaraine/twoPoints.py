@@ -17,10 +17,10 @@ from math import pow
 class TwoPoints(object):
     def __init__(self, point1, point2):
         self.x1 = point1[0]
-        self.x2 = point1[1]
-        self.y1 = point1[2]
-        self.y2 = point2[0]
-        self.z1 = point2[1]
+        self.x2 = point2[0]
+        self.y1 = point1[1]
+        self.y2 = point2[1]
+        self.z1 = point1[2]
         self.z2 = point2[2]
 
     def distanceBetween(self):
