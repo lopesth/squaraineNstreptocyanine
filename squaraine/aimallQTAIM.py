@@ -5,7 +5,7 @@ __GitHubPage__ = "https://github.com/lopesth"
 __email__ = "lopes.th.o@gmail.com"
 __date__ = "Sunday, 14 January 2018"
 
-''' Description: Class to bundle QTAIM data from AIMALL outputs'''
+'''Description: Class to bundle QTAIM data from AIMALL outputs'''
 #########################################################################################
 
 #########################################################################################
@@ -14,7 +14,7 @@ from find_a_string_in_file import Find_a_String
 from re import sub
 #########################################################################################
 
-class qtaimAIMALL (object):
+class QTAIMaimall(object):
 
     def __init__(self, fileName):
         self.fileName = fileName
@@ -145,11 +145,3 @@ class qtaimAIMALL (object):
 
     def returnCPS(self, cpNumber):
         return self.CPtypes[cpNumber-1]
-
-# Description: main function of the script
-if (__name__ == "__main__"):
-    filename = "/Users/thiagolopes/Google Drive/squaraine/opt/aimall_calc/opt_squaraine-H-H-H.mgp"
-    x = qtaimAIMALL(filename)
-    y = x.searchCPbetweenAtons([28, 18])
-    w = x.returnCPcoord(y)
-    print(w)
