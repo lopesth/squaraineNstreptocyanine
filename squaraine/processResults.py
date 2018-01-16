@@ -5,7 +5,7 @@ __GitHubPage__ = "https://github.com/lopesth"
 __email__ = "lopes.th.o@gmail.com"
 __date__ = "Friday, 12 January 2018"
 
-''' Description: Script to process squaraines results (B.X.A abd polarizabilities)'''
+'''Description: Script to process squaraines results (B.X.A abd polarizabilities)'''
 #########################################################################################
 
 #########################################################################################
@@ -50,7 +50,7 @@ def aimallElipt(fileName, bondGroup):
     for bond in bondGroup:
         molecule = QTAIMaimall(fileName)
         x = molecule.searchCPbetweenAtons(bond)
-        bondElpt.append(molecule.returnBondElip(x))
+        bondElpt.append(float(molecule.returnBondElip(x)))
     return bondElpt
 
 # Function Description: Function to find polarizability data
@@ -61,6 +61,44 @@ def findPolarizabilities(fileName, components):
     beta = list(molecule.returnBeta(components[2]).values())[0]
     gamma = list(molecule.returnGamma(components[3]).values())[0]
     return [dipole, alpha, beta, gamma]
+
+# Function Description: Function to compute the Δr of Meyers Paper (DOI: 10.1002/chem.19970030408)
+def delta_r(b, c, d):
+    return 1/2*(abs(b -c) + abs(d-c))
+
+# Function Description: Function to compute the ΔR of Meyers Paper (DOI: 10.1002/chem.19970030408)
+def delta_R(ringValue1, ringValue2, typeR):
+    if typeR == 1:
+        return (ringValue1 + ringValue2)/2
+    return 0
+
+# Function Description: 
+def alternance(seqListValues):
+    anchor1 =  seqListValues[0] 
+    result = 0
+    for i in range(1, len(seqListValues)):
+        anchor2 = seqListValues[i]
+        result = result + abs(anchor1 - anchor2)
+        anchor1 =  seqListValues[i]
+    return (result/i)
+
+# Function Description: Function for processing QTAIM data
+def aimallLapl(fileName, bondGroup):
+    bondElpt = []
+    for bond in bondGroup:
+        molecule = QTAIMaimall(fileName)
+        x = molecule.searchCPbetweenAtons(bond)
+        bondElpt.append(float(molecule.returnLaplacian(x)))
+    return bondElpt
+
+# Function Description: Function for processing QTAIM data
+def aimallRho(fileName, bondGroup):
+    bondElpt = []
+    for bond in bondGroup:
+        molecule = QTAIMaimall(fileName)
+        x = molecule.searchCPbetweenAtons(bond)
+        bondElpt.append(float(molecule.returnRho(x)))
+    return bondElpt
 
 # Description: main function of the script
 if (__name__ == "__main__"):
@@ -76,10 +114,10 @@ if (__name__ == "__main__"):
     }
     dir = "/Users/thiagolopes/Google Drive/squaraine/"
     categorieOfMolecule1 = {
-        'squaraine-H-H-H' : 28, 'squaraine-H-NH2-H' : 30, 'squaraine-H-NMe2-H' : 36, 'squaraine-H-OH-H' : 29, 'squaraine-NH2-OMe-H' : 34,
-        'squaraine-H-OMe-H' : 32, 'squaraine-NH2-NH2-H' : 32, 'squaraine-NH2-NMe2-H' : 38, 'squaraine-NMe2-NMe2-H' : 44,
+        'squaraine-H-H-H' : 28, 'squaraine-H-NH2-H' : 30, 'squaraine-H-NMe2-H' : 36, 'squaraine-H-OH-H' : 29, 'squaraine-H-OMe-H' : 32,
+        'squaraine-NH2-OMe-H' : 34, 'squaraine-NH2-NH2-H' : 32, 'squaraine-NH2-NMe2-H' : 38, 'squaraine-NMe2-NMe2-H' : 44,
         'squaraine-OH-NH2-H' : 31, 'squaraine-OH-NMe2-H' : 37, 'squaraine-OH-OH-H' : 30, 'squaraine-OH-OMe-H' : 33,
-        'squaraine-OMe-NMe2-H' : 40, 'squaraine-OMe-OMe-H' : 36, 'squaraine-NH2-OMe-H' : 34, 'stilbene-NMe2-OMe-H' : 54
+        'squaraine-OMe-NMe2-H' : 40, 'squaraine-OMe-OMe-H' : 36, 'squaraine-NH2-OMe-H' : 34
     }
     categorieOfMolecule2 = {
         'squaraine-H-H-O' : 29, 'squaraine-H-NH2-O' : 31, 'squaraine-H-NMe2-O' : 37, 'squaraine-H-OH-O' : 30,
@@ -99,23 +137,51 @@ if (__name__ == "__main__"):
         'squaraine-NMe2-OH-OH' : 41, 'squaraine-NMe2-OMe-OH' : 41, 'squaraine-OMe-H-OH' : 33, 'squaraine-NMe2-H-OH' : 37,
         'squaraine-NMe2-NH2-OH' : 39, 'squaraine-NH2-OMe-OH' : 35, 'squaraine-NH2-OH-OH' : 32
     }
-    categories = [categorieOfMolecule1, categorieOfMolecule2, categorieOfMolecule3]
+    categories = [categorieOfMolecule1]
     for molecules in categories:
+        typeMol = "H"
+        fileToWName = "meyersAlternationFile_"+typeMol+".dat"
+        filetoWrite = open(dir+"/"+fileToWName, "w")
+        filetoWrite.write("{:>23s} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15}\n" .format("Molecule", "BLA", "BOA", "BEA", "BLPA", "BDA", "Dipole*", "Alpha*", "Beta*", "Gamma*"))
         for moleculeName in list(molecules.keys()):
             molecule = CreateMolecule(dir+"opt/opt_"+moleculeName+".log", molecules[moleculeName]).returnMolecule()
             bonds1 = bonds(ring1)
             bonds2 = bonds(ring2)
             bondL1 = bdLength(molecule, bonds1)
             bondL2 = bdLength(molecule, bonds2)
+            delta_r_BL1 = delta_r(bondL1[0], bondL1[1], bondL1[2])
+            delta_r_BL2 = delta_r(bondL2[0], bondL2[1], bondL2[2])
             bondE1 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
             bondE2 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            bondLapl1 = aimallLapl(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
+            bondLapl2 = aimallLapl(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            bondRho1 = aimallRho(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
+            bondRho2 = aimallRho(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            delta_r_E1 = delta_r(bondE1[0], bondE1[1], bondE1[2])
+            delta_r_E2 = delta_r(bondE2[0], bondE2[1], bondE2[2])
+            delta_r_Lap1 = delta_r(bondLapl1[0], bondLapl1[1], bondLapl1[2])
+            delta_r_Lap2 = delta_r(bondLapl2[0], bondLapl2[1], bondLapl2[2])
+            delta_r_Rho1 = delta_r(bondRho1[0], bondRho1[1], bondRho1[2])
+            delta_r_Rho2 = delta_r(bondRho2[0], bondRho2[1], bondRho2[2])
             polarizabilities = findPolarizabilities(
-                dir+"polar/polar_"+moleculeName+".log", ['x', 'xx', 'xxx', 'xxxx']
+                dir+"polar/polar_"+moleculeName+".log", ['Tot', 'iso', '||', '||']
             )
             dipole = polarizabilities[0]
             alpha = polarizabilities[1]
             beta = polarizabilities[2]
             gamma = polarizabilities[3]
-            for boType in ["mayer", "mulliken", "wiberg"]:
-                bondO1 = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_"+boType+".txt", molecules[moleculeName], bonds1)
-                bondO2 = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_"+boType+".txt", molecules[moleculeName], bonds2)
+            bondO1Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds1)
+            bondO2Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds2)
+            delta_r_BO1 = delta_r(bondO1Mayer[0], bondO1Mayer[1], bondO1Mayer[2])
+            delta_r_BO2 = delta_r(bondO2Mayer[0], bondO2Mayer[1], bondO2Mayer[2])
+            delta_R_BO = delta_R(delta_r_BO1, delta_r_BO2, 1)
+            delta_R_BE = delta_R(delta_r_E1, delta_r_E2, 1)
+            delta_R_BL = delta_R(delta_r_BL1, delta_r_BL2, 1)
+            delta_R_Lap = delta_R(delta_r_Lap1, delta_r_Lap2, 1)
+            delta_R_Rho = delta_R(delta_r_Rho1, delta_r_Rho2, 1)
+
+            filetoWrite.write("{:>23s} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f}\n" .format(
+                moleculeName, delta_R_BL, delta_R_BO, delta_R_BE, delta_R_Lap, delta_R_Rho, dipole, alpha, beta, gamma
+            ))
+        filetoWrite.write("\nBLA -> Bond Lenght Alternation\nBOA -> Mayer Bond Order Alternation\nBEA -> Bond Ellipticity Alternation\nBLPA -> Bond Laplacian Alternation\nBDA -> Bond Density Alternation\n* All polarization properties are invariant with respect to the orientation of the molecule")
+        filetoWrite.close
