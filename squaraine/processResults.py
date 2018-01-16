@@ -52,7 +52,15 @@ def aimallElipt(fileName, bondGroup):
         x = molecule.searchCPbetweenAtons(bond)
         bondElpt.append(molecule.returnBondElip(x))
     return bondElpt
-        
+
+# Function Description: Function to find polarizability data
+def findPolarizabilities(fileName, components):
+    molecule = PolarG09Process(fileName, 2)
+    dipole = list(molecule.returnDipole(components[0]).values())[0]
+    alpha = list(molecule.returnAlpha(components[1]).values())[0]
+    beta = list(molecule.returnBeta(components[2]).values())[0]
+    gamma = list(molecule.returnGamma(components[3]).values())[0]
+    return [dipole, alpha, beta, gamma]
 
 # Description: main function of the script
 if (__name__ == "__main__"):
@@ -101,6 +109,13 @@ if (__name__ == "__main__"):
             bondL2 = bdLength(molecule, bonds2)
             bondE1 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
             bondE2 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            polarizabilities = findPolarizabilities(
+                dir+"polar/polar_"+moleculeName+".log", ['x', 'xx', 'xxx', 'xxxx']
+            )
+            dipole = polarizabilities[0]
+            alpha = polarizabilities[1]
+            beta = polarizabilities[2]
+            gamma = polarizabilities[3]
             for boType in ["mayer", "mulliken", "wiberg"]:
                 bondO1 = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_"+boType+".txt", molecules[moleculeName], bonds1)
                 bondO2 = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_"+boType+".txt", molecules[moleculeName], bonds2)
