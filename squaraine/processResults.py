@@ -100,6 +100,21 @@ def aimallRho(fileName, bondGroup):
         bondElpt.append(float(molecule.returnRho(x)))
     return bondElpt
 
+# Function Description: Define the labels of Bonds
+def catBonds(dictionary):
+    bonds = []
+    for element in list(dictionary.values()):
+        x = str(element[0][0]) + str(element[0][1]) + "-" + str(element[1][0]) + str(element[1][1])
+        bonds.append(x)
+    return bonds  
+
+# Function Description: Calculating the BXA with the Heibbe idea
+def bxaHeibbe(ring1Paramenter, ring2Paramenter):
+    result = 0
+    for i in range(0, len(ring1Paramenter)):
+        result = result + abs(ring1Paramenter[i] - ring2Paramenter[0])/2
+    return result
+
 # Description: main function of the script
 if (__name__ == "__main__"):
     ring1 = {
@@ -140,23 +155,121 @@ if (__name__ == "__main__"):
     categories = [categorieOfMolecule1]
     for molecules in categories:
         typeMol = "H"
-        fileToWName = "meyersAlternationFile_"+typeMol+".dat"
-        filetoWrite = open(dir+"/"+fileToWName, "w")
-        filetoWrite.write("{:>23s} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15}\n" .format("Molecule", "BLA", "BOA", "BEA", "BLPA", "BDA", "Dipole*", "Alpha*", "Beta*", "Gamma*"))
+        bondsLabels1 = catBonds(ring1)
+        bondsLabels2 = catBonds(ring2)
+        bonds1 = bonds(ring1)
+        bonds2 = bonds(ring2)
+        fileToWName1 = "meyersAlternationFile_"+typeMol+".dat"
+        filetoWrite1 = open(dir+"/"+fileToWName1, "w")
+        filetoWrite1.write("{:>23s} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15}\n" .format("Molecule", "BLA", "BOA", "BEA", "BLPA", "BDA", "Dipole*", "Alpha*", "Beta*", "Gamma*"))
         for moleculeName in list(molecules.keys()):
             molecule = CreateMolecule(dir+"opt/opt_"+moleculeName+".log", molecules[moleculeName]).returnMolecule()
-            bonds1 = bonds(ring1)
-            bonds2 = bonds(ring2)
             bondL1 = bdLength(molecule, bonds1)
             bondL2 = bdLength(molecule, bonds2)
-            delta_r_BL1 = delta_r(bondL1[0], bondL1[1], bondL1[2])
-            delta_r_BL2 = delta_r(bondL2[0], bondL2[1], bondL2[2])
             bondE1 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
             bondE2 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
             bondLapl1 = aimallLapl(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
             bondLapl2 = aimallLapl(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
             bondRho1 = aimallRho(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
             bondRho2 = aimallRho(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            bondO1Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds1)
+            bondO2Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds2)
+            BLA = bxaHeibbe(bondL1, bondL2)
+            BOA = bxaHeibbe(bondO1Mayer, bondO2Mayer)
+            BEA = bxaHeibbe(bondE1, bondE2)
+            BLPA = bxaHeibbe(bondLapl1, bondLapl2)
+            BDA = bxaHeibbe(bondRho1, bondRho2)
+            polarizabilities = findPolarizabilities(
+                dir+"polar/polar_"+moleculeName+".log", ['Tot', 'iso', '||', '||']
+            )
+            dipole = polarizabilities[0]
+            alpha = polarizabilities[1]
+            beta = polarizabilities[2]
+            gamma = polarizabilities[3]
+            filetoWrite1.write("{:>23s} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f}\n" .format(
+                moleculeName, BLA, BOA, BEA, BLPA, BDA, dipole, alpha, beta, gamma
+            ))
+        filetoWrite1.write("\nBLA -> Bond Lenght Alternation\nBOA -> Mayer Bond Order Alternation\nBEA -> Bond Ellipticity Alternation\nBLPA -> Bond Laplacian Alternation\nBDA -> Bond Density Alternation\n* All polarization properties are invariant with respect to the orientation of the molecule")
+        filetoWrite1.close
+
+
+'''
+        bondsLabels1 = catBonds(ring1)
+        bondsLabels2 = catBonds(ring2)
+        bonds1 = bonds(ring1)
+        bonds2 = bonds(ring2)
+        typeMol = "H"
+        fileToWName1 = "meyersAlternationFile_"+typeMol+".dat"
+        fileToWName2 = "BOrderFile_"+typeMol+".dat"
+        fileToWName3 = "BLengthFile_"+typeMol+".dat"
+        fileToWName4 = "BElipticFile_"+typeMol+".dat"
+        fileToWName5 = "BLaplacianFile_"+typeMol+".dat"
+        fileToWName6 = "BDensityFile_"+typeMol+".dat"
+        filetoWrite1 = open(dir+"/"+fileToWName1, "w")
+        filetoWrite2 = open(dir+"/"+fileToWName2, "w")
+        filetoWrite3 = open(dir+"/"+fileToWName3, "w")
+        filetoWrite4 = open(dir+"/"+fileToWName4, "w")
+        filetoWrite5 = open(dir+"/"+fileToWName5, "w")
+        filetoWrite6 = open(dir+"/"+fileToWName6, "w")
+        filetoWrite1.write("{:>23s} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15} {:>15}\n" .format("Molecule", "BLA", "BOA", "BEA", "BLPA", "BDA", "Dipole*", "Alpha*", "Beta*", "Gamma*"))
+        filetoWrite2.write("{:>23s}" .format("Molecule"))
+        filetoWrite3.write("{:>23s}" .format("Molecule"))
+        filetoWrite4.write("{:>23s}" .format("Molecule"))
+        filetoWrite5.write("{:>23s}" .format("Molecule"))
+        filetoWrite6.write("{:>23s}" .format("Molecule"))
+        for bondLabel in bondsLabels1:
+            filetoWrite2.write("{:>15s}" .format(bondLabel))
+            filetoWrite3.write("{:>15s}" .format(bondLabel))
+            filetoWrite4.write("{:>15s}" .format(bondLabel))
+            filetoWrite5.write("{:>15s}" .format(bondLabel))
+            filetoWrite6.write("{:>15s}" .format(bondLabel))
+        for i in range(0, len(bondsLabels2)-1):
+            filetoWrite2.write("{:>15s}" .format(bondsLabels2[i]))
+            filetoWrite3.write("{:>15s}" .format(bondsLabels2[i]))
+            filetoWrite4.write("{:>15s}" .format(bondsLabels2[i]))
+            filetoWrite5.write("{:>15s}" .format(bondsLabels2[i]))
+            filetoWrite6.write("{:>15s}" .format(bondsLabels2[i]))
+        filetoWrite2.write("\n" .format(bondLabel))
+        filetoWrite3.write("\n" .format(bondLabel))
+        filetoWrite4.write("\n" .format(bondLabel))
+        filetoWrite5.write("\n" .format(bondLabel))
+        filetoWrite6.write("\n" .format(bondLabel))
+        for moleculeName in list(molecules.keys()):
+            molecule = CreateMolecule(dir+"opt/opt_"+moleculeName+".log", molecules[moleculeName]).returnMolecule()
+            bondL1 = bdLength(molecule, bonds1)
+            bondL2 = bdLength(molecule, bonds2)
+            bondE1 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
+            bondE2 = aimallElipt(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            bondLapl1 = aimallLapl(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
+            bondLapl2 = aimallLapl(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            bondRho1 = aimallRho(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds1)
+            bondRho2 = aimallRho(dir+"opt/aimall_calc/opt_"+moleculeName+".mgp", bonds2)
+            bondO1Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds1)
+            bondO2Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds2)
+            filetoWrite2.write("{:>23s}" .format(moleculeName))
+            filetoWrite3.write("{:>23s}" .format(moleculeName))
+            filetoWrite4.write("{:>23s}" .format(moleculeName))
+            filetoWrite5.write("{:>23s}" .format(moleculeName))
+            filetoWrite6.write("{:>23s}" .format(moleculeName))
+            for i in range(0, len(bondL1)):
+                filetoWrite2.write("{:>15.7f}" .format(bondO1Mayer[i]))
+                filetoWrite3.write("{:>15.7f}" .format(bondL1[i]))
+                filetoWrite4.write("{:>15.7f}" .format(bondE1[i]))
+                filetoWrite5.write("{:>15.7f}" .format(bondLapl1[i]))
+                filetoWrite6.write("{:>15.7f}" .format(bondRho1[i]))
+            for i in range(0, len(bondL1)-1):                
+                filetoWrite2.write("{:>15.7f}" .format(bondO2Mayer[i]))
+                filetoWrite3.write("{:>15.7f}" .format(bondL2[i]))
+                filetoWrite4.write("{:>15.7f}" .format(bondE2[i]))
+                filetoWrite5.write("{:>15.7f}" .format(bondLapl2[i]))
+                filetoWrite6.write("{:>15.7f}" .format(bondRho2[i]))
+            filetoWrite2.write("\n")
+            filetoWrite3.write("\n")
+            filetoWrite4.write("\n")
+            filetoWrite5.write("\n")
+            filetoWrite6.write("\n")
+            delta_r_BL1 = delta_r(bondL1[0], bondL1[1], bondL1[2])
+            delta_r_BL2 = delta_r(bondL2[0], bondL2[1], bondL2[2])
             delta_r_E1 = delta_r(bondE1[0], bondE1[1], bondE1[2])
             delta_r_E2 = delta_r(bondE2[0], bondE2[1], bondE2[2])
             delta_r_Lap1 = delta_r(bondLapl1[0], bondLapl1[1], bondLapl1[2])
@@ -170,8 +283,6 @@ if (__name__ == "__main__"):
             alpha = polarizabilities[1]
             beta = polarizabilities[2]
             gamma = polarizabilities[3]
-            bondO1Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds1)
-            bondO2Mayer = bdOrder(dir+"opt/multiwfn_calc/opt_"+moleculeName+"_bndmat_mayer.txt", molecules[moleculeName], bonds2)
             delta_r_BO1 = delta_r(bondO1Mayer[0], bondO1Mayer[1], bondO1Mayer[2])
             delta_r_BO2 = delta_r(bondO2Mayer[0], bondO2Mayer[1], bondO2Mayer[2])
             delta_R_BO = delta_R(delta_r_BO1, delta_r_BO2, 1)
@@ -180,8 +291,9 @@ if (__name__ == "__main__"):
             delta_R_Lap = delta_R(delta_r_Lap1, delta_r_Lap2, 1)
             delta_R_Rho = delta_R(delta_r_Rho1, delta_r_Rho2, 1)
 
-            filetoWrite.write("{:>23s} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f}\n" .format(
+            filetoWrite1.write("{:>23s} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f} {:>15.7f}\n" .format(
                 moleculeName, delta_R_BL, delta_R_BO, delta_R_BE, delta_R_Lap, delta_R_Rho, dipole, alpha, beta, gamma
             ))
-        filetoWrite.write("\nBLA -> Bond Lenght Alternation\nBOA -> Mayer Bond Order Alternation\nBEA -> Bond Ellipticity Alternation\nBLPA -> Bond Laplacian Alternation\nBDA -> Bond Density Alternation\n* All polarization properties are invariant with respect to the orientation of the molecule")
-        filetoWrite.close
+        filetoWrite1.write("\nBLA -> Bond Lenght Alternation\nBOA -> Mayer Bond Order Alternation\nBEA -> Bond Ellipticity Alternation\nBLPA -> Bond Laplacian Alternation\nBDA -> Bond Density Alternation\n* All polarization properties are invariant with respect to the orientation of the molecule")
+        filetoWrite1.close
+'''
